@@ -107,15 +107,34 @@ class Bgsound extends HTMLElement {
 
 }
 
+class Blink extends HTMLElement {
+    constructor() {
+        super();
+        this.attachShadow({ mode: 'open'});
+        const style = document.createElement('style');
+        style.textContent = `
+            * {
+                animation: 2s linear infinite condemned_blink_effect;
+            }
+            @keyFrames condemned_blink_effect {
+                0% { visibility: hidden; }
+                50% { visibility: hidden; }
+                100% { visibility: visible; }
+            }`;
+        this.shadowRoot.appendChild(document.createElement('slot'))
+        this.shadowRoot.appendChild(style);
+    }
+}
 
 customElements.define('bgsound-', Bgsound)
+customElements.define('blink-', Blink)
 function replaceNode(element, customElementName) {
-    let bgsound = document.createElement(customElementName);
+    let customElement = document.createElement(customElementName);
     while (element.firstChild)
-        bgsound.appendChild(element.firstChild)
+        customElement.appendChild(element.firstChild)
     for (i = element.attributes.length -1; i >= 0; --i)
-        bgsound.attributes.setNamedItem(element.attributes[i].cloneNode());
-    element.parentNode.replaceChild(bgsound, element);
+        customElement.attributes.setNamedItem(element.attributes[i].cloneNode());
+    element.parentNode.replaceChild(customElement, element);
 }
 // Create a MutationObserver to listen for bgsound tags
 let mutationObserver = new MutationObserver((mutationList, mutationObserver) => {
@@ -123,6 +142,8 @@ let mutationObserver = new MutationObserver((mutationList, mutationObserver) => 
         mutations.addedNodes.forEach((node) => {
             if (node.nodeName === 'BGSOUND')
                 replaceNode(node, 'bgsound-');
+            if (node.nodeName === 'BLINK')
+                replaceNode(node, 'blink-');
         })
     })
 })
